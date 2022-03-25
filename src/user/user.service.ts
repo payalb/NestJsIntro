@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateUserInput } from './dto/create-user.input';
@@ -11,16 +11,24 @@ export class UserService {
   constructor(@InjectRepository(User) private readonly userRepo: Repository<User>){
 
   }
-  create(createUserInput: CreateUserInput) {
-    return this.userRepo.save(createUserInput);
+  async create(createUserInput: CreateUserInput) {
+    console.log("User input is **********"+ JSON.stringify(createUserInput))
+    return this.userRepo.save(createUserInput) //@TODO not working
   }
 
   findAll() {
     return this.userRepo.find({});
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(id: number) {
+    return this.userRepo.findOne({id}).then((data)=> {
+      console.log("data is "+ JSON.stringify(data))
+      if(!data){
+        throw new HttpException("No user found", HttpStatus.NO_CONTENT);
+      }else{
+        return data;
+      }
+    })
   }
 
   update(id: number, updateUserInput: UpdateUserInput) {
